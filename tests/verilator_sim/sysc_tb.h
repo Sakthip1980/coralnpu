@@ -196,6 +196,8 @@ struct Sysc_tb : public sc_module {
     return p;
   }
 
+ uint32_t get_cycle() const { return sim_time_ / 2; }
+
  protected:
   virtual void init() {}
   virtual void posedge() {}

@@ -69,6 +69,9 @@ static bool run(const char* name, const std::string binary, const int cycles,
     CHECK_OK(tb.CheckStatusSync());
   }
 
+  uint32_t final_cycle = tb.get_cycle();
+  fprintf(stderr, "Total simulation cycles: %u\n", final_cycle);
+
   sc_stop();
   sc_main_thread.join();
   return (!tb.io_fault && !(tb.tohost_halt && tb.tohost_val != 1));

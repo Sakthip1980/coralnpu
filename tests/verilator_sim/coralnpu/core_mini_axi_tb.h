@@ -244,7 +244,10 @@ struct CoreMiniAxi_tb : Sysc_tb {
 
   static CoreMiniAxi_tb* singleton_;
   static CoreMiniAxi_tb* getSingleton() { return singleton_; }
-  static constexpr uint32_t csr_addr_ = 0x30000;
+#ifndef CORE_MINI_AXI_CSR_ADDR
+#define CORE_MINI_AXI_CSR_ADDR 0x30000
+#endif
+  static constexpr uint32_t csr_addr_ = CORE_MINI_AXI_CSR_ADDR;
   std::unique_ptr<VERILATOR_MODEL> core_;
 
   std::optional<uint32_t> tohost_addr_;
