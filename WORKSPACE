@@ -50,6 +50,7 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 python_register_toolchains(
     name = "python311",
     python_version = "3.11.6",
+    ignore_root_user_error = True,
 )
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 python_configure(

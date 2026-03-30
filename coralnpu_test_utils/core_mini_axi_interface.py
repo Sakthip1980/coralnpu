@@ -808,10 +808,16 @@ class CoreMiniAxiInterface:
 
   async def wait_for_halted(self, timeout_cycles=1000):
     cycle_count = 0
+    next_log = 10_000_000
     while self.dut.io_halted.value != 1 and timeout_cycles > 0:
       await ClockCycles(self.dut.io_aclk, 1)
       timeout_cycles = timeout_cycles - 1
       cycle_count += 1
+      if cycle_count >= next_log:
+        print(f"[wait_for_halted] progress: {cycle_count} cycles elapsed, {timeout_cycles} remaining", flush=True)
+        next_log += 10_000_000
+    if timeout_cycles <= 0:
+      print(f"[wait_for_halted] TIMEOUT after {cycle_count} cycles (core did not halt)", flush=True)
     assert timeout_cycles > 0
     return cycle_count
 
