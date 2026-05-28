@@ -28,11 +28,26 @@ async def core_mini_rvv_mobilenet_v1(dut):
     for elf_file in elf_files:
         await fixture.load_elf_and_lookup_symbols(
             r.Rlocation('coralnpu_hw/tests/cocotb/tutorial/tfmicro/' + elf_file),
-            ['inference_status', 'inference_status_message'])
+            ['inference_status', 'inference_status_message',
+             'inference_cycles_lo', 'inference_cycles_hi',
+             'framework_cycles_lo', 'framework_cycles_hi'])
         # NOTE: Running the example in DEBUG mode is too slow could take more than 500Million cycles
         cycle_count = await fixture.run_to_halt(timeout_cycles=130_000_000)
-        print(f"Total number of execution cycles: {cycle_count} \n", flush=True)
+        print(f"Total number of execution cycles: {cycle_count}", flush=True)
+
         tflite_inference_status = (await fixture.read_word('inference_status')).view(np.int32)
         tflite_inference_message = bytes((await fixture.read('inference_status_message', 31))).decode()
-        assert  tflite_inference_status == 0 , tflite_inference_message
-        print(f" \n Partial mobilenet Invoke() successful \n", flush=True)
+        assert tflite_inference_status == 0, tflite_inference_message
+
+        # Per-phase cycle counts (written by rdcycle64 in run_mobilenet.cc)
+        inv_lo = int((await fixture.read_word('inference_cycles_lo')).view(np.uint32))
+        inv_hi = int((await fixture.read_word('inference_cycles_hi')).view(np.uint32))
+        fw_lo  = int((await fixture.read_word('framework_cycles_lo')).view(np.uint32))
+        fw_hi  = int((await fixture.read_word('framework_cycles_hi')).view(np.uint32))
+        invoke_cycles    = (inv_hi << 32) | inv_lo
+        framework_cycles = (fw_hi  << 32) | fw_lo
+
+        print(f"ROOFLINE_DATA invoke_cycles={invoke_cycles}", flush=True)
+        print(f"ROOFLINE_DATA framework_cycles={framework_cycles}", flush=True)
+        print(f"ROOFLINE_DATA total_cycles={cycle_count}", flush=True)
+        print(f"\nPartial mobilenet Invoke() successful", flush=True)
